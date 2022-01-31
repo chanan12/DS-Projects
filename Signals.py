@@ -1,6 +1,5 @@
 
 
-
 ##################################
 # Import modules
 ##################################
@@ -41,12 +40,13 @@ email_list = email_addr_1.split(";")
 ###################################
 check_email = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 def check(check_email,addr):
-        for addr in email_list:
+        # for addr in email_list:
             if(re.fullmatch(check_email,addr)):
                
-                return True
+               return True
             else:
-                print('Email not valid')                        
+                print('Email not valid') 
+                return False                       
 ##################################
 # built email text template 
 ##################################
@@ -103,26 +103,26 @@ def Email_Message(    Stock,
                       change,
                       date,
                       addr):
-    try:
-         if check(check_email,addr) == True: 
+    # try:
+    #      if check(check_email,addr) == True: 
                       
-            msg_content = msg_text.format(      Stock, 
-                                            Old_Price,
-                                            New_Price, 
-                                            change,
-                                            date)
+        msg_content = msg_text.format( Stock, 
+                                        Old_Price,
+                                        New_Price, 
+                                        change,
+                                        date)
     
     #print('~~~~~~~~~')
     #print(msg_content)
-            msg = EmailMessage()
-            msg.set_content("Stock Alert")
-            msg["Subject"] = "Stock Alert"
-            msg["From"] = "ds@ezevin.com"
-            msg["To"] = addr  
+        msg = EmailMessage()
+        msg.set_content("Stock Alert")
+        msg["Subject"] = "Stock Alert"
+        msg["From"] = "ds@ezevin.com"
+        msg["To"] = addr  
 
-            msg.set_content(msg_content)
-    except Exception as e:
-        print(e)         
+        msg.set_content(msg_content)
+    # except Exception as e:
+    #     print(e)         
     ##################################
     # connect to smtp & Send message
     ##################################
@@ -283,18 +283,21 @@ def main():
                                     change,
                                     dt)  
                         for addr in email_list:
-                            print (addr)
+                            if check(check_email,addr) == True:
+                            # print (addr)
                         # def check(addr):
                         #     if(re.fullmatch(check_email, addr)):
                             ##################################
                             # send messages
                             ##################################
-                            Email_Message(  stock, 
-                                            old_price,
-                                            price, 
-                                            change,
-                                            dt,
-                                            addr)
+                                Email_Message(  stock, 
+                                                old_price,
+                                                price, 
+                                                change,
+                                                dt,
+                                                addr)
+                            else:
+                                print(f'{addr} is not valid')                    
                                 # else:
                                 #     print("Invalid Email")   
                 
