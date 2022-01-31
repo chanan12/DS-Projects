@@ -5,11 +5,18 @@
 # Import modules
 ##################################
 from datetime import datetime
+from distutils.log import INFO
 import json
 #import pyodbc
 import smtplib, ssl
 from email.message import EmailMessage
-
+import re
+import logging
+###########################
+# Logging
+###########################
+logging.basicConfig(filename='stocks.log', level = INFO, 
+                    format='%(asctime)s:%(levelname)s:%(message)s')
 ###########################
 # Emails
 ###########################
@@ -26,10 +33,20 @@ from email.message import EmailMessage
 #msg["To"] = "ds@ezevin.com"
 #msg["To"]  = input("Enter Email:")
 #email_addr_1  = input("Enter Email:")
-email_addr_1 = 'evgeshakurs@gmail.com;idanleyb@gmail.com;ds@ezevin.com'
+email_addr_1 = 'jjjsdfsdfs;idan@avronim.net'
 email_list = email_addr_1.split(";")
 
-                        
+###################################
+# Check if email address is valid
+###################################
+check_email = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+def check(check_email,addr):
+        for addr in email_list:
+            if(re.fullmatch(check_email,addr)):
+               
+                return True
+            else:
+                print('Email not valid')                        
 ##################################
 # built email text template 
 ##################################
@@ -52,7 +69,8 @@ context=ssl.create_default_context()
 #         f.write(lines)
 #         f.write('\n')
 
-my_file_path = r"C:\Users\User\Desktop\Python_Test\filename.txt"         
+my_file_path = r"C:\Users\Idan\Desktop\DS Course\Python Project\signals_file.txt"
+               
            
 def write_row(  my_file_path, 
                 Stock, 
@@ -64,9 +82,17 @@ def write_row(  my_file_path,
         c = Stock + ',' +  str(Old_Price) + ',' + str(New_Price) + ',' + str(change) + ',' + date
         f.write(c)
         f.write('\n')
+        logging.info(f'{Stock} Old:{Old_Price},New:{New_Price},change:{change}')
 
 
-         
+    # print(*columns, sep='\t', end='\n', file=my_file_path)
+    # ### after Email_Message
+    # with open (my_file_path, "a+") as f:
+    #     print(my_file_path)
+    #     if header_print==False:
+    #         write_row(f, 'Stock', 'Old Price', 'New Price','change value', 'date','addres')
+    #         header_print=True
+        
 
 ##################################
 # built Email Message
@@ -77,29 +103,33 @@ def Email_Message(    Stock,
                       change,
                       date,
                       addr):
-    msg_content = msg_text.format(      Stock, 
-                                        Old_Price,
-                                        New_Price, 
-                                        change,
-                                        date)
+    try:
+         if check(check_email,addr) == True: 
+                      
+            msg_content = msg_text.format(      Stock, 
+                                            Old_Price,
+                                            New_Price, 
+                                            change,
+                                            date)
     
     #print('~~~~~~~~~')
     #print(msg_content)
-    msg = EmailMessage()
-    msg.set_content("Stock Alert")
-    msg["Subject"] = "Stock Alert"
-    msg["From"] = "ds@ezevin.com"
-    msg["To"] = addr  
+            msg = EmailMessage()
+            msg.set_content("Stock Alert")
+            msg["Subject"] = "Stock Alert"
+            msg["From"] = "ds@ezevin.com"
+            msg["To"] = addr  
 
-    msg.set_content(msg_content)
+            msg.set_content(msg_content)
+    except Exception as e:
+        print(e)         
     ##################################
     # connect to smtp & Send message
     ##################################
-    with smtplib.SMTP("smtp.gmail.com", port=587) as smtp:
-        smtp.starttls(context=context)
-        smtp.login(msg["From"], "AaZz1234")
-        smtp.send_message(msg)
-
+        with smtplib.SMTP("smtp.gmail.com", port=587) as smtp:
+            smtp.starttls(context=context)
+            smtp.login(msg["From"], "AaZz1234")
+            smtp.send_message(msg)
 ##########################
 # Simple WebSocket Demo
 ###########################
@@ -142,19 +172,19 @@ if __name__ == "__main__":
 from polygon import RESTClient
 
 
-def main():
-    key = 'TJduOIVzU16y129apFCeYoCpKWklDp4A'
+# def main():
+#     key = 'TJduOIVzU16y129apFCeYoCpKWklDp4A'
 
-    # RESTClient can be used as a context manager to facilitate closing the underlying http session
-    # https://requests.readthedocs.io/en/master/user/advanced/#session-objects
-    with RESTClient(key) as client:
-        resp = client.stocks_equities_daily_open_close("AAPL", "2021-06-11")
+#     # RESTClient can be used as a context manager to facilitate closing the underlying http session
+#     # https://requests.readthedocs.io/en/master/user/advanced/#session-objects
+#     with RESTClient(key) as client:
+#         resp = client.stocks_equities_daily_open_close("AAPL", "2021-06-11")
        
-        print(f"On: {resp.from_} Apple opened at {resp.open} and closed at {resp.close}")
+#         print(f"On: {resp.from_} Apple opened at {resp.open} and closed at {resp.close}")
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
 
 
 #######################################
@@ -254,6 +284,8 @@ def main():
                                     dt)  
                         for addr in email_list:
                             print (addr)
+                        # def check(addr):
+                        #     if(re.fullmatch(check_email, addr)):
                             ##################################
                             # send messages
                             ##################################
@@ -263,7 +295,8 @@ def main():
                                             change,
                                             dt,
                                             addr)
- 
+                                # else:
+                                #     print("Invalid Email")   
                 
                     
         #print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
@@ -274,5 +307,4 @@ if __name__ == '__main__':
     print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
     print('work')
     print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
-    
 
